@@ -7,3 +7,5 @@ Short.Name,Char,Full Country Name (from Education dataset).
 Income.Group,Char,Income classfication (from Education dataset).
 GDPRank2,Varchar,"GDP Rank of country (#1, #2, #3, etc).  Leading zeroes were added so the data would sort correctly."
 Income.Group2,Char,Shortened income classification for crosstab display.
+Government.Accounting.concept,Char,Accounting method used by nation
+Region,Char,Geographical Region of country
