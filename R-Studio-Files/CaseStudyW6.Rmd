@@ -9,9 +9,9 @@ output:
 
 ## GDP and Education Level Case Study
 
-The purpose of this case study is to assess GDP Rank and GDP in USD using data from the worldbank.org website.  Two datasets are used and merged with the purpose of appending income group with the GDP data.  Since countries with large populations may have a large total GDP, but low GDP per capita, grouping by income group will give a better assessment of a country's relative productivity and citezens' quality of life.
+The purpose of this case study is to assess GDP Rank and GDP in USD using data from the worldbank.org website.  Two datasets are used and merged with the purpose of appending income group with the GDP data.  Since countries with large populations may have a large total GDP, but low GDP per capita, grouping by income group will give a better assessment of a country's relative productivity and citizens' quality of life.
 
-### Deliverable
+## Deliverable
 Since reproducibility is an important aspect of this assignment, the deliverable will be a github repository with R Markdown code, data dictionary, and the original datasets.  The code will be runable with one alteration, changing the working directory to one on the running computer's local drive.  However, there are a number of packages used which may need to be installed.
 
 ## The Code
@@ -23,12 +23,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## Set working directory (you'll need to update this to your local working directory)
+### Set working directory (you'll need to update this to your local working directory)
 ```{r working directory}
 setwd("/SMU/Doing Data Science/Unit 6/CaseStudy/CaseStudyWeek6")
 ```
 
-## Load Libraries, install "stringr" package if needed
+### Load Libraries, install "stringr" package if needed
 ```{r Libraries}
 ##install.packages("stringr")
 library(plyr)
@@ -39,7 +39,7 @@ library(ggplot2)
 library(scales) # needed for formatting y-axis labels to non-scientific type
 ```
 
-## Download the datasets
+### Download the datasets
 ```{r Download}
 download("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FGDP.csv",destfile="GDPData.csv")
 download("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country.csv",destfile="EducationalData.csv")
@@ -47,21 +47,21 @@ download("https://d396qusza40orc.cloudfront.net/getdata%2Fdata%2FEDSTATS_Country
 cat("Data downloaded into current working directory\n")
 ```
 
-## Load the data into R
+### Load the data into R
 ```{r Data Load}
 GDP <- read.csv("GDPData.csv",skip=4)
 Education <- read.csv("EducationalData.csv",na.strings=c("", "NA"))
 ```
 
-## Assess the data
+### Assess the data.  Note that this part of the analysis is commented out since it is not neccesary for final output and was slowing down viewing of the html output.
 ```{r Summary Statistics}
 ##head(GDP)
 ##head(Education)
-summary(GDP)
-summary(Education)
+##summary(GDP)
+##summary(Education)
 ```
 
-## Assign header names for GDP, and remove blank columns
+### Assign header names for GDP, and remove blank columns
 ```{r Headers}
 GDP <- GDP[,-3,-7]
 colnames(GDP) <- c('CountryCode','GDPRank','CountryName','GDP')
@@ -73,7 +73,7 @@ GDP <- GDP[,-5,-6]
 head(GDP)
 ```
 
-## From the GDP Summary, it was found that 24 values for GDP are missing.  Those values are removed below.  Also remove blank rows and NAs
+### From the GDP Summary, it was found that 24 values for GDP are missing.  Those values are removed below.  Also remove blank rows and NAs
 ```{r Missing GDP}
 GDP <- subset(GDP, GDP != "..")
 GDP <- subset(GDP, CountryName != "Djibouti")
@@ -82,24 +82,24 @@ GDP <- na.omit(GDP)
 ```
 
 
-## Merge the Datasets and reduce to only columns needed.
+### Merge the Datasets and reduce to only columns needed.
 ```{r Merge}
 FullData <- merge(GDP,Education, by.x = "CountryCode", by.y = "CountryCode", all=TRUE)
 
 GDPRecords <- GDP[,c("CountryCode","CountryName")]
 EduRecords <- Education[,c("CountryCode","Short.Name")]
-FullData2 <- FullData[,c("CountryCode","GDPRank","CountryName","GDP","Short.Name","Income.Group")]
+FullData2 <- FullData[,c("CountryCode","GDPRank","CountryName","GDP","Short.Name","Income.Group","Government.Accounting.concept","Region")]
 FullData2 <- FullData2[order(FullData2$GDP),]
 ```
 
-## Question 1.  Show row counts.  Note that two records were in GDP, but not Education (Andorra, South Sudan).  Additonally, 21 records were in Education, but not GDP
+### Question 1.  Show row counts.  Note that two records were in GDP, but not Education (Andorra, South Sudan).  Additonally, 21 records were in Education, but not GDP
 ```{r Rows}
 nrow(GDPRecords)
 nrow(EduRecords)
 nrow(FullData2)
 ```
 
-## Remove the records that didn't match and non country specific data.  Also add in a GDP rank column with leading zeros for sorting and sort by descending order.
+### Remove the records that didn't match and non-country specific data.  Also add in a GDP rank column with leading zeros for sorting and sort by descending order.  Once removing records with no GDP rank, the record count is reduced to 190 from 235.
 ```{r Order}
 FullData3 <- subset(FullData2, GDPRank != "")
 
@@ -109,13 +109,13 @@ nrow(FullData3)
 head(FullData3)
 ```
 
-## For Question 2, once the data is in descending order, show the 13th from lowest GDP country.
+### For Question 2, once the data is in descending order, show the 13th from lowest GDP country.
 #### From the below, we can see that Grenada and St. Kitts and Nevis are tied for 13th from last.
 ```{r Show 13}
 head(FullData3,13)
 ```
 
-## For Question 3, What are the average GDP rankings for the "High income: OECD" and "High income: non OECD" groups?
+### For Question 3, What are the average GDP rankings for the "High income: OECD" and "High income: non OECD" groups?
 ```{r Average GDP}
 ## Convert GDP to numeric
 FullData3$GDP = gsub(pattern = ",", replacement = "", FullData3$GDP)
@@ -123,34 +123,35 @@ FullData3[, c(4)] <- sapply(FullData3[, c(4)], as.numeric)
 ddply(FullData3, .(Income.Group), summarize, GDPMean = mean(GDP))
 head(FullData3)
 ```
-### High income: nonOECD countries have a mean GDP of $104,349 while High income: OECD countries have a mean income of $1,483,917
+### High income: nonOECD countries have a mean GDP of $104,349 USD in millions while High income: OECD countries have a mean GDP of $1,483,917 USD in millions.
 
-## Question 4.  Plot the GDP data for all countries
+### Question 4.  Plot the GDP data for all countries
 ```{r Plot}
 scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
 Graph1 <- ggplot(FullData3, aes(x = GDPRank2, y = GDP, color = Income.Group))
-Graph1 + geom_point() + scale_y_continuous(labels = comma) + geom_point()
+Graph1 + geom_point() + scale_y_continuous(labels = comma) + geom_point() + xlab("GDP Rank") + ylab("USD in millions") + ggtitle("Scatterplot of GDP by country")
 ```
 
-## Question 4.  Since the data has a few high GDP countries and many low GDP countries, the above graph is difficult to interpret due to the scale being off.  The following step performs a Log Transformation of GDP and replots.
+### Question 4.  Since the data has a few high GDP countries and many low GDP countries, the above graph is difficult to interpret due to the scale being off.  The following step performs a Log Transformation of GDP and replots.
 ```{r Log Plot}
 scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
 Graph1 <- ggplot(FullData3, aes(x = GDPRank2, y = log(GDP), color = Income.Group))
-Graph1 + geom_point() + scale_y_continuous(labels = comma) + geom_point()
+Graph1 + geom_point() + scale_y_continuous(labels = comma) + geom_point() + xlab("GDP Rank") + ylab("log transformed USD in millions") + ggtitle("Scatterplot of GDP by country")
 ```
 
 ### Once the data is log transformed, it takes on an S-Shape.  We can also see high income: OECD countries make up most of the high GDP Rank countries, while high income: nonOECD countries tend to lag behind their OECD counterparts.  There are some exceptions, most notably China which has a very high GDP rank despite being classified as a lower middle income nation.  Lower middle income countries typically appear around the middle and low end of GDP Rank.
 
-## Cut the GDP rankings into quintile Groups.
+### Cut the GDP rankings into quintile Groups.
 ```{r Quintiles}
 FullData3$Quintile <- with(FullData3, factor(findInterval(GDP, c(-Inf, quantile(GDP, probs=c(0.20, 0.40, 0.60, 0.80)), Inf)), labels=c("Q5","Q4","Q3","Q2","Q1")))
 ```
 
-## Make a crosstab of Quintiles vs Income Groups
-```{r Crosstab}
+### Make a crosstab of Quintiles vs Income Groups
+```{r Crosstab Income}
 # Load function
 source("http://pcwww.liv.ac.uk/~william/R/crosstab.r")
 
+# create new variable for income group so it can be shortened for display purposes
 FullData3$Income.Group2 <- NA
 
 # shorten income group variable names to fit and create order
@@ -159,13 +160,61 @@ FullData3$Income.Group2[FullData3$Income.Group == "High income: nonOECD"] <- "2 
 FullData3$Income.Group2[FullData3$Income.Group == "Upper middle income"] <- "3 UMI"
 FullData3$Income.Group2[FullData3$Income.Group == "Lower middle income"] <- "4 LMI"
 FullData3$Income.Group2[FullData3$Income.Group == "Low income"] <- "5 LI"
-head(FullData3)
 
 # Frequency count
 crosstab(FullData3, row.vars = "Quintile", col.vars = "Income.Group2", type = "f")
-# Frequency count
+# Total Percentages
 crosstab(FullData3, row.vars = "Quintile", col.vars = "Income.Group2", type = "t", percentages = FALSE)
+# Column percentages
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Income.Group2", type = "c")
 ```
 
-## Question 5.  From the above, there are 5 countries that are lower middle income and in the first quintile.
-## Also of note are the distributions for the income group categories.  High income: OECD countries tend to fall in the two upper quintiles, while high income: non OECD and Upper Middle Income countries are spread somewhat evenly amongst quintiles.  Lower middle income and Lower income are skewed towards tht lower quartiles.
+### Question 5.  From the above, there are 5 countries that are lower middle income and in the first quintile.  These countries are in order of GDP Rank: China, India, Indonesia, Thailand, and Egypt.  We can also see from the counts that one country did not have an income group classifcation and was excluded from both the above plot and tables.
+
+### Also of note are the distributions for the income group categories.  High income: OECD countries tend to fall in the two upper quintiles while high income: non OECD have a somewhat normal distribution amongst quintiles.  Upper middle income countries have the most evenly spread distributions amongst quintiles.  Lower middle income and lower income are skewed towards the lower quartiles.
+
+
+## The code below contains additional analysis beyond the five questions.  Government accounting concepts and geographical region are assessed to see if they may be indicitive of a high income country.
+
+
+### Make a crosstab of Quintiles vs government accounting concepts.
+```{r Crosstab Accounting}
+# Load function
+source("http://pcwww.liv.ac.uk/~william/R/crosstab.r")
+
+# Frequency count
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Government.Accounting.concept", type = "f")
+# Total Percentages
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Government.Accounting.concept", type = "t", percentages = FALSE)
+# Column percentages
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Government.Accounting.concept", type = "c")
+```
+
+### From the above, 45 countries did not have a record for government accounting concept.  Consolidated accounting concepts were used 76% of the time vs 24% for budgetary.  While the sample size is somewhat small for budgetary, consolidated accounting concepts are more often used in higher GDP ranked countries which may indicate it leads to higher economic growth.
+
+### Make crosstabs of Quintiles vs Region
+```{r Crosstab Region}
+# Load function
+source("http://pcwww.liv.ac.uk/~william/R/crosstab.r")
+
+# create new variable for income group so it can be shortened for display purposes
+FullData3$Region2 <- NA
+
+# shorten income group variable names to fit and create order
+FullData3$Region2[FullData3$Region == "North America"] <- "1 No Am"
+FullData3$Region2[FullData3$Region == "East Asia & Pacific"] <- "2 Ea As Pa"
+FullData3$Region2[FullData3$Region == "Europe & Central Asia"] <- "3 Eu Ce As"
+FullData3$Region2[FullData3$Region == "Middle East & North Africa"] <- "4 Mi Ea No Af"
+FullData3$Region2[FullData3$Region == "Latin America & Caribbean"] <- "5 La Am Ca"
+FullData3$Region2[FullData3$Region == "South Asia"] <- "6 So As"
+FullData3$Region2[FullData3$Region == "Sub-Saharan Africa"] <- "7 Su Sa Af"
+
+# Frequency count
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Region2", type = "f")
+# Total Percentages
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Region2", type = "t", percentages = FALSE)
+# Column percentages
+crosstab(FullData3, row.vars = "Quintile", col.vars = "Region2", type = "c")
+```
+
+## From the above, all 189 countries had a region category assigned.  The data becomes somewhat thin, but some trends can be observed.  North America only has three countries, but two appear in the upper quintile.  East Asia and the South Pacific has a U shaped curve with most countries in the highest and lowest quintiles.  Europe and Central Asia is skewed towards the two upper quintiles.  The Middle East and North Africa is skewed towards the two upper quintiles, but has some countries in the lower two.  Latin America and the Caribbean has the closest to a normal distribution, but is more skewed towards the lower quintiles.  South Asia has a small sample size, but skews more towards the upper quintiles.  Sub-Saharan Africa is heavily skewed towards the lower quintiles.
